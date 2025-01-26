@@ -281,4 +281,5 @@ WHERE YEAR(o.OrderDate) = 1997 AND MONTH(o.OrderDate) = 1
 GROUP BY p.ProductName
 ORDER BY Amount DESC
 
--- docker run --name dockersql -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=1q2w3e4R!" -p 11433:1433 -d mcr.microsoft.com/mssql/server:2022-latest
+-- docker (podman) run --name dockersql -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=1q2w3e4R!" -p 11433:1433 -d mcr.microsoft.com/mssql/server:2022-latest
+--SQL Server Management Studio
