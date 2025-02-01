@@ -248,6 +248,7 @@ INNER JOIN Territories t ON et.TerritoryID = t.TerritoryID
 WHERE t.TerritoryDescription = 'Denver'
 
 -- AGGREGATE FUNCTIONS
+-- MIN MAX SUM AVG COUNT
 -- Ürünler arasýndaki en yüksek etiket fiyatý
 SELECT MAX(UnitPrice) FROM Products
 SELECT TOP 1 UnitPrice FROM Products ORDER BY UnitPrice DESC
@@ -283,3 +284,199 @@ ORDER BY Amount DESC
 
 -- docker (podman) run --name dockersql -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=1q2w3e4R!" -p 11433:1433 -d mcr.microsoft.com/mssql/server:2022-latest
 --SQL Server Management Studio
+
+-- Kaç ürün satýlmaktadýr
+SELECT COUNT(0) AS ProductCount FROM Products
+
+-- Stokta olan ürün adedi
+SELECT COUNT(0) FROM Products
+WHERE UnitsInStock > 0
+
+-- Kategoriye göre ürün adedi
+SELECT CategoryId, COUNT(0) ProductCount FROM Products
+GROUP BY CategoryID
+ORDER BY 2 DESC -- 2. kolona göre tersten sýrala
+
+SELECT c.CategoryName, COUNT(0) ProductCount 
+FROM Products p
+INNER JOIN Categories c ON p.CategoryID = c.CategoryID
+GROUP BY CategoryName
+ORDER BY ProductCount DESC -- 2. kolona göre tersten sýrala
+
+-- Stokta toplam kaç paralýk ürün var
+SELECT SUM(UnitPrice * UnitsInStock) AS Summary FROM Products
+
+--1997 yýlýnda alýnan sipariþlerin toplam cirosu
+SELECT SUM(od.UnitPrice * od.Quantity) Summary
+FROM [Order Details] od
+INNER JOIN Orders o ON od.OrderId = o.OrderID
+WHERE YEAR(o.OrderDate) = 1997
+
+--Yýllýk sipariþleri toplam cirosu
+SELECT YEAR(o.OrderDate) AS [Year], SUM(od.UnitPrice * od.Quantity) Summary
+FROM [Order Details] od
+INNER JOIN Orders o ON od.OrderId = o.OrderID
+GROUP BY YEAR(o.OrderDate)
+ORDER BY 1
+
+--1997 yýlýnda müþteriye göre sipariþ cirosu
+SELECT c.CompanyName, SUM(od.UnitPrice * od.Quantity) Summary 
+FROM [Order Details] od
+INNER JOIN Orders o ON od.OrderID = o.OrderID
+INNER JOIN Customers c ON o.CustomerID = c.CustomerID
+WHERE YEAR(o.OrderDate) = 1997
+GROUP BY c.CompanyName
+ORDER BY CompanyName
+
+--1997 yýlýnda 10000 ve üzeri sipariþ veren müþteriler ve sipariþ tutarlarý
+-- Yöntem 1
+SELECT CompanyName, Summary 
+FROM (
+	SELECT c.CompanyName, SUM(od.UnitPrice * od.Quantity) Summary 
+	FROM [Order Details] od
+	INNER JOIN Orders o ON od.OrderID = o.OrderID
+	INNER JOIN Customers c ON o.CustomerID = c.CustomerID
+	WHERE YEAR(o.OrderDate) = 1997
+	GROUP BY c.CompanyName
+) AS Customers
+WHERE Summary >= 10000
+ORDER BY Summary DESC
+
+-- Cool Yöntem
+SELECT c.CompanyName, SUM(od.UnitPrice * od.Quantity) Summary 
+FROM [Order Details] od
+INNER JOIN Orders o ON od.OrderID = o.OrderID
+INNER JOIN Customers c ON o.CustomerID = c.CustomerID
+WHERE YEAR(o.OrderDate) = 1997
+GROUP BY c.CompanyName
+HAVING (SUM(od.UnitPrice * od.Quantity) > 10000) -- AGGREGATE FUNCTION için filtre yapma
+ORDER BY Summary DESC
+
+-- 
+SELECT 
+	ROW_NUMBER() OVER (ORDER BY od.OrderID ASC) AS OrderGroup, 
+	od.OrderID, 
+	p.ProductName, 
+	od.UnitPrice * od.Quantity Summary
+FROM [Order Details] od
+INNER JOIN Orders o ON od.OrderID = o.OrderID
+INNER JOIN Products p ON od.ProductID = p.ProductID
+WHERE o.CustomerID = 'ALFKI'
+
+SELECT 
+	od.OrderID, 
+	ROW_NUMBER() OVER (PARTITION BY od.OrderID ORDER BY p.ProductName) AS OrderGroup, 
+	p.ProductName, 
+	od.UnitPrice * od.Quantity Summary
+FROM [Order Details] od
+INNER JOIN Orders o ON od.OrderID = o.OrderID
+INNER JOIN Products p ON od.ProductID = p.ProductID
+WHERE o.CustomerID = 'ANTON'
+
+-- Ürünleri kategorisine göre gruplama
+SELECT 
+	ROW_NUMBER() OVER (PARTITION BY c.CategoryName ORDER BY p.ProductName) Number,
+	c.CategoryName, 
+	p.ProductName 
+FROM Products p
+INNER JOIN Categories c ON p.CategoryID = c.CategoryID
+ORDER BY c.CategoryName
+
+-- En yüksek satýþa sahip 5 ürün
+--Yöntem 1
+SELECT TOP 5 WITH TIES -- Son deðer ayný ise eþit olanlarý da getirir dolayýsý ile 5 yerine 6-7 kayýt dönebilir
+	p.ProductName, 
+	SUM(od.UnitPrice * od.Quantity) Summary 
+FROM [Order Details] od
+INNER JOIN Products p ON od.ProductID = p.ProductID
+GROUP BY p.ProductName
+ORDER BY Summary DESC
+
+SELECT ProductName, Summary FROM (
+	SELECT 
+		ROW_NUMBER() OVER (ORDER BY SUM(od.UnitPrice * od.Quantity) DESC) [Rank],
+		p.ProductName, 
+		SUM(od.UnitPrice * od.Quantity) Summary 
+	FROM [Order Details] od
+	INNER JOIN Products p ON od.ProductID = p.ProductID
+	GROUP BY p.ProductName
+) AS Orders
+WHERE [Rank] <= 5 
+
+-- CTE : Commo Table Expressions
+WITH PL AS 
+(
+	SELECT ProductId AS Id, ProductName AS Name, CategoryName AS Category
+	FROM Products p
+	INNER JOIN Categories c ON p.CategoryID = c.CategoryID
+	WHERE c.CategoryName = 'Beverages'
+)
+
+SELECT *
+FROM [Order Details] od
+INNER JOIN PL p ON od.ProductID = p.Id
+
+-- Almanya'ki müþterilerin sipariþlerinin toplam kazancý
+WITH CUS AS (
+	SELECT CustomerID FROM Customers WHERE Country = 'Germany'
+)
+
+SELECT SUM (od.UnitPrice * od.Quantity) Summary FROM [Order Details] od
+INNER JOIN Orders o ON od.OrderID = o.OrderID
+INNER JOIN CUS c ON o.CustomerID = c.CustomerID
+
+-- Her bir müþterinin toplam harcamasý ile en çok sipariþ verdiði 
+-- ürün kategorisi ve son sipariþ tarihi
+
+WITH CustSum AS (
+	-- Her müþterinin toplam alýþveriþi
+	SELECT 
+		o.CustomerID, 
+		SUM(od.Quantity * od.UnitPrice) AS Summary,
+		MAX(o.OrderDate) AS LastOrderDate
+	FROM [Order Details] od
+	INNER JOIN Orders o ON od.OrderID = o.OrderID
+	GROUP BY o.CustomerID
+),
+
+CustCat AS (
+	-- her müþterinin en çok sipariþ verdiði kategoriye göre sýrala
+	SELECT 
+		ROW_NUMBER() OVER (PARTITION BY CustomerID ORDER BY COUNT(p.ProductID) DESC) AS Sira,
+		o.CustomerID, 
+		p.CategoryID, 
+		COUNT(p.ProductID) AS Summary
+	FROM [Order Details] od
+	INNER JOIN Orders o ON od.OrderID = o.OrderID
+	INNER JOIN Products p ON od.ProductID = p.ProductID
+	GROUP BY o.CustomerID, p.CategoryID
+)
+
+SELECT s.CustomerID, s.Summary, ct.CategoryName, s.LastOrderDate FROM CustSum s
+INNER JOIN CustCat c ON s.CustomerID = c.CustomerID
+INNER JOIN Categories ct ON c.CategoryID = ct.CategoryID
+WHERE c.Sira = 1 and s.Summary > 10000
+ORDER BY s.Summary DESC
+
+SELECT * FROM Categories
+SELECT * FROM Products WHERE CategoryID = 9
+SELECT * FROM Products p
+INNER JOIN Categories c ON p.CategoryID = c.CategoryID
+--INNER JOIN
+SELECT p.ProductName, c.CategoryName FROM Products p
+INNER JOIN Categories c ON p.CategoryID = c.CategoryID
+--LEFT JOIN
+SELECT p.ProductName, c.CategoryName FROM Products p
+LEFT JOIN Categories c ON p.CategoryID = c.CategoryID
+--RIGHT JOIN
+SELECT p.ProductName, c.CategoryName FROM Products p
+RIGHT JOIN Categories c ON p.CategoryID = c.CategoryID
+
+-- NULL CHECK
+SELECT * FROM Products WHERE CategoryID IS NULL
+SELECT * FROM Products WHERE CategoryID IS NOT NULL
+
+-- ÇOKLU PARAMETRE ARAMA
+-- Ýçecek ve deniz ürünü olanlar
+SELECT * FROM Products WHERE CategoryID = 1 OR CategoryID = 8
+SELECT * FROM Products WHERE CategoryID IN (1,8)
