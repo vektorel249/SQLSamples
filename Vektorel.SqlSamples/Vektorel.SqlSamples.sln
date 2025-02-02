@@ -3,9 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vektorel.SqlOnConsole", "Vektorel.SqlOnConsole\Vektorel.SqlOnConsole.csproj", "{3CF18D56-AD4E-4DC7-AD19-D5EE189FD370}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vektorel.SqlOnConsole", "Vektorel.SqlOnConsole\Vektorel.SqlOnConsole.csproj", "{3CF18D56-AD4E-4DC7-AD19-D5EE189FD370}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vektorel.Sql.FormApp", "Vektorel.Sql.FormApp\Vektorel.Sql.FormApp.csproj", "{DD1CC66D-F000-4851-8597-56074F2F2F73}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vektorel.Sql.FormApp", "Vektorel.Sql.FormApp\Vektorel.Sql.FormApp.csproj", "{DD1CC66D-F000-4851-8597-56074F2F2F73}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vektorel.Northwind.WinForm", "Vektorel.Northwind.WinForm\Vektorel.Northwind.WinForm.csproj", "{E5E913BB-10EA-4467-857F-E2FFD217B0DE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vektorel.Northwind.Data", "Vektorel.Northwind.Data\Vektorel.Northwind.Data.csproj", "{62B5C236-49E1-4232-A91A-CBF7B1E1657C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vektorel.Northwind.Web", "Vektorel.Northwind.Web\Vektorel.Northwind.Web.csproj", "{68F788BD-9923-4018-AAA5-1E454E12A091}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +27,18 @@ Global
 		{DD1CC66D-F000-4851-8597-56074F2F2F73}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DD1CC66D-F000-4851-8597-56074F2F2F73}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DD1CC66D-F000-4851-8597-56074F2F2F73}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E5E913BB-10EA-4467-857F-E2FFD217B0DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5E913BB-10EA-4467-857F-E2FFD217B0DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E5E913BB-10EA-4467-857F-E2FFD217B0DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5E913BB-10EA-4467-857F-E2FFD217B0DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62B5C236-49E1-4232-A91A-CBF7B1E1657C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62B5C236-49E1-4232-A91A-CBF7B1E1657C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62B5C236-49E1-4232-A91A-CBF7B1E1657C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62B5C236-49E1-4232-A91A-CBF7B1E1657C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{68F788BD-9923-4018-AAA5-1E454E12A091}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68F788BD-9923-4018-AAA5-1E454E12A091}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68F788BD-9923-4018-AAA5-1E454E12A091}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68F788BD-9923-4018-AAA5-1E454E12A091}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

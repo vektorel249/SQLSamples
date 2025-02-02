@@ -480,3 +480,176 @@ SELECT * FROM Products WHERE CategoryID IS NOT NULL
 -- Ýçecek ve deniz ürünü olanlar
 SELECT * FROM Products WHERE CategoryID = 1 OR CategoryID = 8
 SELECT * FROM Products WHERE CategoryID IN (1,8)
+
+-- DML : Data Manipulation Query
+
+-- INSERT, UPDATE, DELETE
+-- Kategori Ekle
+-- Ekleme yaparken NOT NULL olan alanlarý vermek zorundayýz
+-- Ekleme yaparken kolonlarý belirtmek istemiyorsanýz, tablo tanýmýndaki 
+--  tüm kolonlarý SIRASINA göre eklemeniz gerekir.
+INSERT INTO Shippers
+VALUES ('Titanic Coo.', '+44 75 654200')
+
+INSERT INTO Categories 
+	(CategoryName, Description)
+VALUES
+	('Electronics', 'Home stuffs that use electricity')
+
+INSERT INTO Categories 
+	(CategoryName, Description)
+VALUES
+	('Glassware', 'Everything needed at home')
+
+SELECT * FROM Categories
+
+INSERT INTO Products
+	(ProductName, UnitsInStock, UnitPrice, CategoryID, QuantityPerUnit)
+VALUES
+	('Süpürge', 45, 800, 9, '1 piece in box')
+
+INSERT INTO Products
+	(ProductName, UnitsInStock, UnitPrice, CategoryID, QuantityPerUnit)
+VALUES
+	('Kahve Makinesi', 20, 650, 9, '1 piece in box')
+
+INSERT INTO Products
+	(ProductName, UnitsInStock, UnitPrice, CategoryID, QuantityPerUnit)
+VALUES
+	('Gýrgýr', 250, 35, 10, '2 piece in box')
+
+INSERT INTO Products
+	(ProductName, UnitsInStock, UnitPrice, CategoryID, QuantityPerUnit)
+VALUES
+	('Çaydanlýk', 200, 76, 10, '1 piece in box')
+
+INSERT INTO Products
+	(ProductName, UnitsInStock, UnitPrice, CategoryID, QuantityPerUnit)
+VALUES
+	('Ayna', 27, 128, 10, '1 piece in box')
+
+INSERT INTO Products
+	(ProductName, UnitsInStock, UnitPrice, CategoryID, QuantityPerUnit)
+VALUES
+	('Çaydanlýk', 200, 76, 10, '1 piece in box')
+
+---------------------
+INSERT INTO Suppliers
+	(CompanyName, ContactName, Country, City, Phone)
+VALUES
+	('Arzum', 'Arzu Kaya', 'Turkiye', 'Ankara', '0312 456 1232')
+
+INSERT INTO Suppliers
+	(CompanyName, ContactName, Country, City, Phone)
+VALUES
+	('Tefal', 'Tevfik Alsancak', 'Turkiye', 'Ýzmir', '0232 154 0988')
+
+-- DELETE
+-- Çalýþýtýrldýktan sonra geri alýnmasý mümkün olmayan sorgudur.
+-- Olabildiðince Primary Key üzerinden silme yapýlmalýdýr
+DELETE FROM Categories WHERE CategoryID = 12 -- (HARD DELETE)
+
+DELETE FROM Categories WHERE CategoryID IN (13, 14)
+
+DELETE FROM Products WHERE ProductID = 81 -- Primary üzerinden sil
+
+SELECT * FROM Products WHERE CategoryID IN (9, 10)
+
+-- UPDATE
+
+UPDATE Products SET SupplierID = 31 WHERE ProductID = 80
+
+UPDATE Products SET SupplierID = 32 WHERE ProductID IN (81, 82)
+
+--UPDATE Products SET SupplierID = 31
+--DELETE FROM Products
+--DELETE FROM [Order Details]
+
+-- Herkes kendisini müþteri olarak ekleyecek
+SELECT * FROM Customers
+INSERT INTO Customers 
+	(CustomerID, CompanyName, ContactName, ContactTitle, Country, City, Address)
+VALUES 
+	('CPERK', 'Perque Digital', 'Can Perk', 'Sales Manager', 'Türkiye', 'Ankara', 'Kýzýlay')
+-- Herkes bir ürün kategorisi seçecek
+SELECT * FROM Categories
+INSERT INTO Categories 
+	(CategoryName, Description)
+VALUES 
+	('Cleaning', 'Soap, shampoo, all cleaning materials')
+-- Herkes Kendi adýna bir saðlayýcý firma açacak
+INSERT INTO Suppliers
+	(CompanyName, ContactName, Country, City, Phone)
+VALUES
+	('Henkel', 'Olga Swachf', 'Germany', 'Berlin', '+49 735654512')
+
+INSERT INTO Suppliers
+	(CompanyName, ContactName, Country, City, Phone)
+VALUES
+	('Viking', 'Tamer Daþdan', 'Turkiye', 'Denizli', '+90 244 6543222')
+
+SELECT * FROM Suppliers
+
+UPDATE Suppliers SET CompanyName = 'MyPower Tuning', ContactName = 'Mücahit Bak' WHERE SupplierID = 36
+-- Herkes seçilen kategori ve saðlayýcýya göre 2 - 3 ürün ekleyecek
+
+INSERT INTO Products
+	(ProductName, UnitsInStock, UnitPrice, CategoryID, SupplierID, QuantityPerUnit)
+VALUES
+	('Persil', 760, 87, 11, 34, '1 piece in box')
+
+INSERT INTO Products
+	(ProductName, UnitsInStock, UnitPrice, CategoryID, SupplierID, QuantityPerUnit)
+VALUES
+	('Vernel', 387, 112, 11, 34, '4 boxes in basket')
+
+INSERT INTO Products
+	(ProductName, UnitsInStock, UnitPrice, CategoryID, SupplierID, QuantityPerUnit)
+VALUES
+	('Pril', 400, 21.90, 11, 34, '1.5 lt x 4 packages')
+
+INSERT INTO Products
+	(ProductName, UnitsInStock, UnitPrice, CategoryID, SupplierID, QuantityPerUnit)
+VALUES
+	('Viking Sývý Deterjan', 118, 39.98, 11, 35, '2 lt x 2 packages')
+
+INSERT INTO Products
+	(ProductName, UnitsInStock, UnitPrice, CategoryID, SupplierID, QuantityPerUnit)
+VALUES
+	('Viking Tech Yüzey', 90, 41.76, 11, 35, '2 lt x 2 packages')
+
+SELECT * FROM Products
+
+SELECT * FROM Products WHERE ProductID = 85
+UPDATE Products SET UnitPrice = 8400 WHERE ProductID = 85
+-- Eklenen ürünler ve istenirse diðer ürünlerle bir satýþ kaydý açýlacak
+
+INSERT INTO Orders
+	(CustomerID, EmployeeID, OrderDate, RequiredDate)
+VALUES
+	('CPERK', 1, GETDATE(), DATEADD(DAY, 5, GETDATE()))
+
+-- BULK INSERT
+INSERT INTO [Order Details]
+VALUES
+	(11081, 88, 87, 3, 0),
+	(11081, 90, 21.90, 8, 0),
+	(11081, 91, 39.98, 4, 0),
+	(11081, 92, 41.76, 2, 0),
+	(11081, 89, 112, 1, 0)
+
+SELECT * FROM [Order Details]
+WHERE OrderID = 11078
+
+UPDATE [Order Details] 
+SET UnitPrice = 8400, Quantity = 3
+WHERE OrderID = 11078 AND ProductID = 85
+
+SELECT SUM(UnitPrice * Quantity) FROM [Order Details] WHERE OrderID = 11078
+
+-- GETDATE : DateTime.Now
+-- DATEADD : DateTÝme.Now.AddDays(5)
+
+SELECT TOP 10 * FROM Orders ORDER BY OrderID DESC
+
+--- ÖDEV : SELECT INTO Araþtýr
