@@ -653,3 +653,180 @@ SELECT SUM(UnitPrice * Quantity) FROM [Order Details] WHERE OrderID = 11078
 SELECT TOP 10 * FROM Orders ORDER BY OrderID DESC
 
 --- ÖDEV : SELECT INTO Araþtýr
+
+-- DDL: Data Definition Language
+-- CREATE, ALTER, DROP
+-- SELECT INTO, VIEW, FUNCTION, STORED PROCEDURE, TRIGGER ve INDEX
+GO
+CREATE SCHEMA vektorel
+GO
+CREATE TABLE vektorel.Vehicles
+(
+	VehicleID INT NOT NULL PRIMARY KEY,
+	PlateNumber varchar(10) NOT NULL,
+	Brand varchar(10) NULL,
+	VehicleType SMALLINT NULL,
+	LastMaintanenceDate DATETIME NULL
+)
+
+INSERT INTO vektorel.Vehicles
+VALUES (1, '06EFY320', 'Ford', 1, NULL),
+	   (2, '06BCG098', 'Mitsubishi', 2, '2023-02-05 12:09:23')
+
+SELECT * FROM vektorel.Vehicles
+
+INSERT INTO vektorel.Vehicles
+(VehicleID, PlateNumber, Brand, VehicleType, LastMaintanenceDate)
+VALUES (4, '06ATD454', 'Ford', 1, NULL)
+
+INSERT INTO vektorel.Vehicles
+(VehicleID, PlateNumber, Brand)
+VALUES (5, '06FGA590', 'Volvo')
+
+-- Tabloyu sil
+DROP TABLE vektorel.Vehicles
+
+CREATE TABLE vektorel.Vehicles
+(
+	VehicleID INT NOT NULL PRIMARY KEY IDENTITY(1, 1),
+	PlateNumber varchar(10) NOT NULL,
+	Brand varchar(10) NULL,
+	VehicleType SMALLINT NULL, -- 1: Kamyon, 2: Kamyonet, 3: Otomobil
+	LastMaintanenceDate DATETIME NULL
+)
+
+INSERT INTO vektorel.Vehicles
+VALUES ('06EFY320', 'Ford', 1, NULL),
+	   ('06BCG098', 'Mitsubishi', 2, '2023-02-05 12:09:23')
+
+INSERT INTO vektorel.Vehicles
+(PlateNumber, Brand, VehicleType, LastMaintanenceDate)
+VALUES ('06ATD454', 'Ford', 1, NULL)
+
+INSERT INTO vektorel.Vehicles
+(PlateNumber, Brand)
+VALUES ('06FGA590', 'Volvo')
+
+SELECT * FROM vektorel.Vehicles
+GO
+-- Tabloyu düzenle
+ALTER TABLE vektorel.Vehicles
+ADD Note TEXT NULL
+
+ALTER TABLE vektorel.Vehicles
+ADD IsActive BIT NOT NULL DEFAULT(1)
+
+INSERT INTO vektorel.Vehicles
+(PlateNumber, Brand)
+VALUES ('06DBA230', 'Volvo')
+
+INSERT INTO vektorel.Vehicles
+(PlateNumber, Brand, IsActive)
+VALUES ('06EFD677', 'BMC', 0)
+
+ALTER TABLE vektorel.Vehicles
+DROP COLUMN Note
+
+SELECT * FROM vektorel.Vehicles
+
+-- NOT NULL CONSTRAINT'i i.in eklendi
+-- Aþaðýdaki sorgu çalýþmýyordu
+UPDATE vektorel.Vehicles SET VehicleType = 1 WHERE VehicleType IS NULL
+
+ALTER TABLE vektorel.Vehicles
+ALTER COLUMN VehicleType TINYINT NOT NULL
+
+INSERT INTO vektorel.Vehicles
+(PlateNumber, Brand, VehicleType, IsActive)
+VALUES ('06BGC833', 'BMC', 1, 1)
+
+WITH cte AS
+(
+	SELECT 
+		FirstName + ' ' + LastName AS FullName, 
+		HomePhone AS PhoneNumber,
+		'Çalýþan' AS [Type]
+	FROM Employees
+	UNION
+	SELECT ContactName, Phone, 'Müþteri' AS [Type] FROM Customers
+	UNION
+	SELECT ContactName, Phone, 'Tedarikçi' AS [Type] FROM Suppliers
+)
+
+select 
+	ROW_NUMBER() OVER(ORDER BY FullName) AS PersonID, 
+	FullName, 
+	PhoneNumber, 
+	Type 
+into vektorel.PhoneBook
+from cte
+
+ALTER TABLE vektorel.PhoneBook
+ALTER COLUMN PersonID INT NOT NULL
+
+ALTER TABLE vektorel.PhoneBook
+ADD CONSTRAINT PK_PersonID PRIMARY KEY CLUSTERED(PersonID)
+
+INSERT INTO vektorel.Vehicles
+(PlateNumber, Brand, VehicleType, IsActive)
+VALUES ('06PRK20', 'Honda', 3, 1)
+
+SELECT * FROM vektorel.Vehicles
+
+ALTER TABLE vektorel.Vehicles
+ADD CONSTRAINT Vehicle_Type_Check CHECK (VehicleType IN (1, 2, 3))
+
+ALTER TABLE vektorel.Vehicles
+DROP CONSTRAINT Vehicle_Type_Check
+
+ALTER TABLE vektorel.Vehicles
+ADD CONSTRAINT Vehicle_Type_Check CHECK (VehicleType IN (1, 2, 3, 4)) -- 4: Motosiklet
+
+-- VIEWS
+GO
+
+CREATE VIEW vektorel.YearlySales
+AS
+SELECT YEAR(o.OrderDate) AS Year, SUM(od.UnitPrice * od.Quantity) AS Total
+FROM dbo.Orders o
+INNER JOIN dbo.[Order Details] od ON o.OrderID = od.OrderID
+GROUP BY YEAR(o.OrderDate)
+
+---
+SELECT * FROM vektorel.YearlySales ORDER BY Year
+
+-- VIEW vs MATERIALIZED VIEW
+
+SELECT 
+	PlateNumber, 
+	Brand, 
+	CASE VehicleType 
+	WHEN 1 THEN 'Kamyon'
+	WHEN 2 THEN 'Kamyonet'
+	WHEN 3 THEN 'Otomobil'
+	ELSE 'Diðer'
+	END AS Type,
+	CASE IsActive 
+	WHEN 1 THEN 'Kullanýmda'
+	WHEN 0 THEN 'Kullaným Dýþý'
+	END AS UsageStatus
+FROM vektorel.Vehicles
+
+-- Bu sorguyu EF çalýþtýrdý :D
+CREATE TABLE [vektorel].[EmployeeVehicles] (
+    [ID] int NOT NULL IDENTITY,
+    [EmployeeID] int NOT NULL,
+    [VehicleID] int NOT NULL,
+    [StartDate] datetime2 NOT NULL,
+    [EndDate] datetime2 NULL,
+    CONSTRAINT [PK_EmployeeVehicles] PRIMARY KEY ([ID]),
+    CONSTRAINT [FK_EmployeeVehicles_Employees_EmployeeID] FOREIGN KEY ([EmployeeID]) REFERENCES [Employees] ([EmployeeID]) ON DELETE CASCADE,
+    CONSTRAINT [FK_EmployeeVehicles_Vehicles_VehicleID] FOREIGN KEY ([VehicleID]) REFERENCES [vektorel].[Vehicles] ([VehicleID]) ON DELETE CASCADE
+)
+--
+-- BU korguyu da EF çalýþtýrdý
+--INSERT INTO [vektorel].[EmployeeVehicles] ([EmployeeID], [EndDate], [StartDate], [VehicleID])
+--OUTPUT INSERTED.[ID]
+--VALUES (@p0, @p1, @p2, @p3);
+GO
+select * from vektorel.EmployeeVehicles
